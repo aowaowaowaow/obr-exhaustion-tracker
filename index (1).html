@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Истощение и Припасы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Spectral:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #16130f;
+    --panel: #221d17;
+    --panel-edge: #332b21;
+    --bone: #d9d2c2;
+    --bone-dim: #8c8578;
+    --ember: #8a2e22;
+    --ember-glow: #c8553d;
+    --ember-soft: #4a251d;
+    --water: #5a7a8c;
+    --water-glow: #7fa3b5;
+    --water-soft: #2c3d45;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--void);
+    color: var(--bone);
+    font-family: 'Spectral', serif;
+    overflow-x: hidden;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 32px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    margin-bottom: 6px;
+  }
+  h1 {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--bone);
+  }
+  .role-badge {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--panel-edge);
+    border-radius: 20px;
+    color: var(--bone-dim);
+  }
+  .role-badge.gm { color: var(--ember-glow); border-color: var(--ember-soft); }
+
+  main {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    margin-bottom: 8px;
+    margin-top: 4px;
+  }
+
+  .track-card {
+    background: linear-gradient(180deg, var(--panel) 0%, #1c1712 100%);
+    border: 1px solid var(--panel-edge);
+    border-radius: 3px;
+    padding: 16px 16px;
+    position: relative;
+  }
+  .track-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ember-soft), transparent);
+  }
+  .track-card.thirst::before {
+    background: linear-gradient(90deg, transparent, var(--water-soft), transparent);
+  }
+
+  .track-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .track-name {
+    font-family: 'IM Fell English SC', serif;
+    font-size: 18px;
+  }
+  .track-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--bone-dim);
+  }
+  .track-value b { color: var(--ember-glow); font-weight: 700; }
+  .track-card.thirst .track-value b { color: var(--water-glow); }
+
+  .track-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .track-cell {
+    flex: 1;
+    height: 24px;
+    background: #0f0c09;
+    border: 1px solid var(--panel-edge);
+    border-radius: 2px;
+    cursor: default;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+  }
+  .gm-mode .track-cell { cursor: pointer; }
+  .track-cell.filled {
+    background: linear-gradient(180deg, var(--ember-glow), var(--ember));
+    box-shadow: 0 0 10px rgba(200, 85, 61, 0.45);
+    border-color: var(--ember-glow);
+  }
+  .track-card.thirst .track-cell.filled {
+    background: linear-gradient(180deg, var(--water-glow), var(--water));
+    box-shadow: 0 0 10px rgba(90, 122, 140, 0.5);
+    border-color: var(--water-glow);
+  }
+
+  .track-label {
+    font-family: 'Spectral', serif;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--bone-dim);
+  }
+
+  .supplies-row {
+    display: flex;
+    gap: 12px;
+  }
+  .supply-card {
+    flex: 1;
+    background: linear-gradient(180deg, var(--panel) 0%, #1c1712 100%);
+    border: 1px solid var(--panel-edge);
+    border-radius: 3px;
+    padding: 16px;
+    text-align: center;
+  }
+  .supply-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    margin-bottom: 12px;
+  }
+  .supply-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .supply-btn {
+    display: none;
+    width: 30px;
+    height: 30px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: var(--bone-dim);
+    background: rgba(34, 29, 23, 0.6);
+    border: 1px solid var(--panel-edge);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .gm-mode .supply-btn { display: inline-flex; align-items: center; justify-content: center; }
+  .supply-btn:hover { color: var(--ember-glow); border-color: var(--ember-soft); }
+
+  .supply-input {
+    width: 60px;
+    text-align: center;
+    font-family: 'IM Fell English SC', serif;
+    font-size: 28px;
+    color: var(--bone);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--panel-edge);
+    pointer-events: none;
+  }
+  .gm-mode .supply-input { pointer-events: auto; border-bottom-color: var(--ember-soft); }
+  .supply-input:focus { outline: none; }
+  .supply-input::-webkit-outer-spin-button,
+  .supply-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .save-toolbar {
+    display: none;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .gm-mode .save-toolbar { display: flex; }
+  .save-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bone-dim);
+    background: rgba(34, 29, 23, 0.6);
+    border: 1px solid var(--panel-edge);
+    border-radius: 3px;
+    padding: 7px 12px;
+    cursor: pointer;
+  }
+  .save-btn:hover { color: var(--ember-glow); border-color: var(--ember-soft); }
+
+  .save-note {
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--bone-dim);
+    opacity: 0.7;
+    text-align: center;
+  }
+  .gm-mode .save-note { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Учёт выживания партии</div>
+  <h1>Истощение и Припасы</h1>
+  <div class="role-badge" id="roleBadge">Проверка роли…</div>
+</header>
+
+<main>
+
+  <div>
+    <div class="section-title">Истощение</div>
+
+    <div class="track-card hunger" style="margin-bottom:10px;">
+      <div class="track-top-row">
+        <div class="track-name">Голод</div>
+        <div class="track-value"><b id="hungerVal">0</b> / 4</div>
+      </div>
+      <div class="track-bar" id="hungerBar" data-track="hunger" data-max="4"></div>
+      <div class="track-label" id="hungerLabel">В порядке</div>
+    </div>
+
+    <div class="track-card thirst" style="margin-bottom:10px;">
+      <div class="track-top-row">
+        <div class="track-name">Жажда</div>
+        <div class="track-value"><b id="thirstVal">0</b> / 3</div>
+      </div>
+      <div class="track-bar" id="thirstBar" data-track="thirst" data-max="3"></div>
+      <div class="track-label" id="thirstLabel">В порядке</div>
+    </div>
+
+    <div class="track-card sleep">
+      <div class="track-top-row">
+        <div class="track-name">Сон</div>
+        <div class="track-value"><b id="sleepVal">0</b> / 4</div>
+      </div>
+      <div class="track-bar" id="sleepBar" data-track="sleep" data-max="4"></div>
+      <div class="track-label" id="sleepLabel">В порядке</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-title">Припасы партии</div>
+    <div class="supplies-row">
+      <div class="supply-card">
+        <div class="supply-name">Еда (зарядов)</div>
+        <div class="supply-controls">
+          <button class="supply-btn" data-supply="food" data-delta="-1">−</button>
+          <input class="supply-input" id="foodInput" type="number" value="0" min="0">
+          <button class="supply-btn" data-supply="food" data-delta="1">+</button>
+        </div>
+      </div>
+      <div class="supply-card">
+        <div class="supply-name">Вода (зарядов)</div>
+        <div class="supply-controls">
+          <button class="supply-btn" data-supply="water" data-delta="-1">−</button>
+          <input class="supply-input" id="waterInput" type="number" value="0" min="0">
+          <button class="supply-btn" data-supply="water" data-delta="1">+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-toolbar">
+    <button class="save-btn" id="exportBtn">Скачать сохранение</button>
+    <button class="save-btn" id="importBtn">Загрузить сохранение</button>
+    <input type="file" id="importInput" accept="application/json" style="display:none;">
+  </div>
+  <div class="save-note">Только ГМ может менять значения. У игроков — только просмотр, синхронизируется само.</div>
+
+</main>
+
+<script type="module">
+import OBR from "https://esm.sh/@owlbear-rodeo/sdk@2";
+
+const METADATA_KEY = "com.exhaustion-tracker.owlbear/data";
+
+const hungerLabels = ['В порядке', 'Лёгкий голод', 'Голод', 'Сильный голод', 'Истощение'];
+const thirstLabels = ['В порядке', 'Жажда', 'Сильная жажда', 'Обезвоживание'];
+const sleepLabels = ['В порядке', 'Недосып', 'Усталость', 'Изнеможение', 'Коллапс'];
+
+const defaultState = {
+  hunger: 0,
+  thirst: 0,
+  sleep: 0,
+  food: 3,
+  water: 3
+};
+
+let state = { ...defaultState };
+let isGM = false;
+
+function renderBar(id, track, max, value) {
+  const bar = document.getElementById(id);
+  bar.innerHTML = '';
+  for (let i = 1; i <= max; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'track-cell' + (i <= value ? ' filled' : '');
+    cell.dataset.track = track;
+    cell.dataset.cell = i;
+    bar.appendChild(cell);
+  }
+}
+
+function render() {
+  renderBar('hungerBar', 'hunger', 4, state.hunger);
+  renderBar('thirstBar', 'thirst', 3, state.thirst);
+  renderBar('sleepBar', 'sleep', 4, state.sleep);
+
+  document.getElementById('hungerVal').textContent = state.hunger;
+  document.getElementById('thirstVal').textContent = state.thirst;
+  document.getElementById('sleepVal').textContent = state.sleep;
+
+  document.getElementById('hungerLabel').textContent = hungerLabels[state.hunger] || '';
+  document.getElementById('thirstLabel').textContent = thirstLabels[state.thirst] || '';
+  document.getElementById('sleepLabel').textContent = sleepLabels[state.sleep] || '';
+
+  document.getElementById('foodInput').value = state.food;
+  document.getElementById('waterInput').value = state.water;
+}
+
+async function persist() {
+  await OBR.room.setMetadata({ [METADATA_KEY]: state });
+}
+
+document.addEventListener('click', async (ev) => {
+  if (!isGM) return;
+
+  const cell = ev.target.closest('.track-cell');
+  if (cell) {
+    const track = cell.dataset.track;
+    const value = parseInt(cell.dataset.cell, 10);
+    state[track] = (state[track] === value) ? value - 1 : value;
+    render();
+    await persist();
+    return;
+  }
+
+  const supplyBtn = ev.target.closest('[data-supply]');
+  if (supplyBtn) {
+    const key = supplyBtn.dataset.supply;
+    const delta = parseInt(supplyBtn.dataset.delta, 10);
+    state[key] = Math.max(0, (state[key] || 0) + delta);
+    render();
+    await persist();
+    return;
+  }
+});
+
+['foodInput', 'waterInput'].forEach((id) => {
+  document.getElementById(id).addEventListener('change', async (ev) => {
+    if (!isGM) { render(); return; }
+    const key = id === 'foodInput' ? 'food' : 'water';
+    let val = parseInt(ev.target.value, 10);
+    if (isNaN(val) || val < 0) val = 0;
+    state[key] = val;
+    render();
+    await persist();
+  });
+});
+
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `istoshchenie-pripasy-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+  document.getElementById('importInput').click();
+});
+
+document.getElementById('importInput').addEventListener('change', (ev) => {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      state = {
+        hunger: clamp(parsed.hunger, 0, 4),
+        thirst: clamp(parsed.thirst, 0, 3),
+        sleep: clamp(parsed.sleep, 0, 4),
+        food: Math.max(0, parseInt(parsed.food, 10) || 0),
+        water: Math.max(0, parseInt(parsed.water, 10) || 0)
+      };
+      render();
+      await persist();
+    } catch (err) {
+      alert('Не удалось загрузить файл: это не сохранение трекера истощения.');
+    }
+    ev.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+function clamp(v, min, max) {
+  v = parseInt(v, 10);
+  if (isNaN(v)) return min;
+  return Math.max(min, Math.min(max, v));
+}
+
+async function init() {
+  const role = await OBR.player.getRole();
+  isGM = role === 'GM';
+  document.body.classList.toggle('gm-mode', isGM);
+  const badge = document.getElementById('roleBadge');
+  badge.textContent = isGM ? 'Режим Ведущего · редактирование включено' : 'Режим Игрока · только просмотр';
+  badge.classList.toggle('gm', isGM);
+
+  const metadata = await OBR.room.getMetadata();
+  state = metadata[METADATA_KEY] || { ...defaultState };
+  render();
+
+  if (!metadata[METADATA_KEY] && isGM) {
+    await persist();
+  }
+
+  OBR.room.onMetadataChange((newMetadata) => {
+    const incoming = newMetadata[METADATA_KEY];
+    if (incoming) {
+      state = incoming;
+      render();
+    }
+  });
+
+  OBR.player.onChange((player) => {
+    const nowGM = player.role === 'GM';
+    if (nowGM !== isGM) {
+      isGM = nowGM;
+      document.body.classList.toggle('gm-mode', isGM);
+      badge.textContent = isGM ? 'Режим Ведущего · редактирование включено' : 'Режим Игрока · только просмотр';
+      badge.classList.toggle('gm', isGM);
+    }
+  });
+}
+
+OBR.onReady(() => { init(); });
+</script>
+
+</body>
+</html>

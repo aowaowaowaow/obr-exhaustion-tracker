@@ -1,0 +1,15 @@
+{
+  "id": "com.exhaustion-tracker.owlbear",
+  "name": "Истощение и Припасы",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "author": "GM",
+  "description": "Отслеживание голода, жажды и сна партии, плюс запасы еды и воды.",
+  "action": {
+    "title": "Истощение и Припасы",
+    "icon": "https://ЗАМЕНИ-НА-СВОЙ-ЛОГИН.github.io/obr-exhaustion-tracker/icon.svg",
+    "popover": "https://ЗАМЕНИ-НА-СВОЙ-ЛОГИН.github.io/obr-exhaustion-tracker/index.html",
+    "width": 420,
+    "height": 680
+  }
+}
