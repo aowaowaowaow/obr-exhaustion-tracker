@@ -119,6 +119,14 @@
     font-family: 'IM Fell English SC', serif;
     font-size: 18px;
   }
+  .track-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+    color: var(--bone-dim);
+    opacity: 0.75;
+    margin-top: 2px;
+  }
   .track-value {
     font-family: 'JetBrains Mono', monospace;
     font-size: 12px;
@@ -265,29 +273,38 @@
 
     <div class="track-card hunger" style="margin-bottom:10px;">
       <div class="track-top-row">
-        <div class="track-name">Голод</div>
+        <div>
+          <div class="track-name">Голод</div>
+          <div class="track-sub">Медленный · про выносливость</div>
+        </div>
         <div class="track-value"><b id="hungerVal">0</b> / 4</div>
       </div>
       <div class="track-bar" id="hungerBar" data-track="hunger" data-max="4"></div>
-      <div class="track-label" id="hungerLabel">В порядке</div>
+      <div class="track-label" id="hungerLabel">Всё в порядке</div>
     </div>
 
     <div class="track-card thirst" style="margin-bottom:10px;">
       <div class="track-top-row">
-        <div class="track-name">Жажда</div>
+        <div>
+          <div class="track-name">Жажда</div>
+          <div class="track-sub">Быстрая и опасная · про тело в целом</div>
+        </div>
         <div class="track-value"><b id="thirstVal">0</b> / 3</div>
       </div>
       <div class="track-bar" id="thirstBar" data-track="thirst" data-max="3"></div>
-      <div class="track-label" id="thirstLabel">В порядке</div>
+      <div class="track-label" id="thirstLabel">Всё в порядке</div>
     </div>
 
     <div class="track-card sleep">
       <div class="track-top-row">
-        <div class="track-name">Сон</div>
+        <div>
+          <div class="track-name">Недосып</div>
+          <div class="track-sub">Про разум · копится от сорванного отдыха</div>
+        </div>
         <div class="track-value"><b id="sleepVal">0</b> / 4</div>
       </div>
       <div class="track-bar" id="sleepBar" data-track="sleep" data-max="4"></div>
-      <div class="track-label" id="sleepLabel">В порядке</div>
+      <div class="track-label" id="sleepLabel">Всё в порядке</div>
     </div>
   </div>
 
@@ -327,9 +344,36 @@ import OBR from "https://esm.sh/@owlbear-rodeo/sdk@2";
 
 const METADATA_KEY = "com.exhaustion-tracker.owlbear/data";
 
-const hungerLabels = ['В порядке', 'Лёгкий голод', 'Голод', 'Сильный голод', 'Истощение'];
-const thirstLabels = ['В порядке', 'Жажда', 'Сильная жажда', 'Обезвоживание'];
-const sleepLabels = ['В порядке', 'Недосып', 'Усталость', 'Изнеможение', 'Коллапс'];
+const hungerLevels = [
+  null,
+  { title: 'Пусто внутри', effect: '−1 к проверкам Силы и Атлетики' },
+  { title: 'Слабнут руки', effect: '−1 к броскам атаки оружием' },
+  { title: 'Тело ест само себя', effect: 'максимум ХП уменьшен на 1/4' },
+  { title: 'На честном слове', effect: 'помеха на все проверки и спасброски Силы/Телосложения, Скорость −10 фт' }
+];
+const thirstLevels = [
+  null,
+  { title: 'Сушит горло', effect: 'помеха на проверки Концентрации' },
+  { title: 'Судороги', effect: 'Скорость вдвое, −2 ко всем броскам и спасброскам Телосложения' },
+  { title: 'Тело отказывает', effect: 'в начале каждого своего хода 1к4 урона, помеха на все спасброски' }
+];
+const sleepLevels = [
+  null,
+  { title: 'Туман в голове', effect: 'помеха на проверки Восприятия и Анализа' },
+  { title: 'Не собраться', effect: '−2 к Инициативе, нельзя получить преимущество от помощи союзника' },
+  { title: 'Плывёт', effect: 'помеха на все проверки и спасброски Мудрости/Интеллекта; заклинателям — спасбросок Телосложения СЛ 10 при сотворении заклинания, иначе оно срывается' },
+  { title: 'Микросон', effect: 'в начале каждого своего хода в бою спасбросок Телосложения СЛ 12, при провале теряешь действие' }
+];
+
+function renderTrackLabel(elId, levels, value) {
+  const el = document.getElementById(elId);
+  const entry = levels[value];
+  if (!entry) {
+    el.textContent = 'Всё в порядке';
+  } else {
+    el.innerHTML = `<b>«${entry.title}»</b> — ${entry.effect}`;
+  }
+}
 
 const defaultState = {
   hunger: 0,
@@ -363,9 +407,9 @@ function render() {
   document.getElementById('thirstVal').textContent = state.thirst;
   document.getElementById('sleepVal').textContent = state.sleep;
 
-  document.getElementById('hungerLabel').textContent = hungerLabels[state.hunger] || '';
-  document.getElementById('thirstLabel').textContent = thirstLabels[state.thirst] || '';
-  document.getElementById('sleepLabel').textContent = sleepLabels[state.sleep] || '';
+  renderTrackLabel('hungerLabel', hungerLevels, state.hunger);
+  renderTrackLabel('thirstLabel', thirstLevels, state.thirst);
+  renderTrackLabel('sleepLabel', sleepLevels, state.sleep);
 
   document.getElementById('foodInput').value = state.food;
   document.getElementById('waterInput').value = state.water;
