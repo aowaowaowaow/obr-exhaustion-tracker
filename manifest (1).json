@@ -1,5 +1,4 @@
 {
-  "id": "com.exhaustion-tracker.owlbear",
   "name": "Истощение и Припасы",
   "version": "1.0.0",
   "manifest_version": 1,
@@ -7,8 +6,8 @@
   "description": "Отслеживание голода, жажды и сна партии, плюс запасы еды и воды.",
   "action": {
     "title": "Истощение и Припасы",
-    "icon": "https://ЗАМЕНИ-НА-СВОЙ-ЛОГИН.github.io/obr-exhaustion-tracker/icon.svg",
-    "popover": "https://ЗАМЕНИ-НА-СВОЙ-ЛОГИН.github.io/obr-exhaustion-tracker/index.html",
+    "icon": "https://aowaowaowaow.github.io/obr-exhaustion-tracker/icon (1).svg",
+    "popover": "https://aowaowaowaow.github.io/obr-exhaustion-tracker/index (1).html",
     "width": 420,
     "height": 680
   }
